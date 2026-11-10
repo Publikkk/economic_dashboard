@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global Economic & Labor Market Intelligence Dashboard</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        slate: {
+                            850: '#131e32',
+                            900: '#0f172a',
+                            950: '#070d19',
+                        },
+                        brand: {
+                            cyan: '#06b6d4',
+                            emerald: '#10b981',
+                            indigo: '#6366f1',
+                            violet: '#8b5cf6',
+                            rose: '#f43f5e',
+                            amber: '#f59e0b'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Google Fonts Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome Icons CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #070d19;
+            color: #f8fafc;
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+
+        /* Glassmorphism utility */
+        .glass-card {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .glass-card-hover {
+            transition: all 0.3s ease;
+        }
+        .glass-card-hover:hover {
+            border-color: rgba(6, 182, 212, 0.4);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(6, 182, 212, 0.1);
+        }
+
+        /* Table sticky column */
+        th, td {
+            white-space: nowrap;
+        }
+    </style>
+</head>
+<body class="min-h-screen text-slate-100 flex flex-col justify-between antialiased selection:bg-cyan-500 selection:text-slate-900">
+
+    <!-- Header Navigation -->
+    <header class="sticky top-0 z-50 glass-card border-b border-slate-800 bg-slate-900/90">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div class="flex items-center space-x-3">
+                    <div class="p-2.5 bg-gradient-to-tr from-cyan-500 to-indigo-600 rounded-xl shadow-lg shadow-cyan-500/20 text-white">
+                        <i class="fa-solid font-bold fa-chart-line text-xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold tracking-tight text-white flex items-center gap-2">
+                            Global Market Intelligence <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">v2.5 Live</span>
+                        </h1>
+                        <p class="text-xs text-slate-400">Analisis Komparatif Indikator Ekonomi & Pasar Kerja (ID, SG, PT, DE, JP, AU)</p>
+                    </div>
+                </div>
+
+                <!-- Global Country Filter Buttons -->
+                <div class="flex flex-wrap items-center gap-1.5 bg-slate-950 p-1.5 rounded-xl border border-slate-800" id="countryFilters">
+                    <button data-country="ALL" class="country-btn active bg-gradient-to-r from-cyan-500 to-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-semibold transition-all shadow-md shadow-cyan-500/20">
+                        <i class="fa-solid fa-globe mr-1"></i> Semua Negara
+                    </button>
+                    <button data-country="Indonesia" class="country-btn text-slate-400 hover:text-white hover:bg-slate-800 px-3 py-1.5 rounded-lg text-xs font-medium transition-all">
+                        🇮🇩 ID
+                    </button>
+                    <button data-country="Singapore" class="country-btn text-slate-400 hover:text-white hover:bg-slate-800 px-3 py-1.5 rounded-lg text-xs font-medium transition-all">
+                        🇸🇬 SG
+                    </button>
+                    <button data-country="Portugal" class="country-btn text-slate-400 hover:text-white hover:bg-slate-800 px-3 py-1.5 rounded-lg text-xs font-medium transition-all">
+                        🇵🇹 PT
+                    </button>
+                    <button data-country="Germany" class="country-btn text-slate-400 hover:text-white hover:bg-slate-800 px-3 py-1.5 rounded-lg text-xs font-medium transition-all">
+                        🇩🇪 DE
+                    </button>
+                    <button data-country="Japan" class="country-btn text-slate-400 hover:text-white hover:bg-slate-800 px-3 py-1.5 rounded-lg text-xs font-medium transition-all">
+                        🇯🇵 JP
+                    </button>
+                    <button data-country="Australia" class="country-btn text-slate-400 hover:text-white hover:bg-slate-800 px-3 py-1.5 rounded-lg text-xs font-medium transition-all">
+                        🇦🇺 AU
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full space-y-8 flex-grow">
+
+        <!-- Banner Controls & Status -->
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-gradient-to-r from-slate-900 via-slate-850 to-slate-900 p-4 rounded-2xl border border-slate-800 shadow-xl">
+            <div class="flex items-center gap-3">
+                <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                    <i class="fa-solid fa-circle-info text-sm"></i>
+                </span>
+                <div>
+                    <h3 class="text-sm font-semibold text-slate-200" id="filterStatusTitle">Menampilkan Perbandingan 6 Negara</h3>
+                    <p class="text-xs text-slate-400">Data dikalkulasi berdasarkan estimasi indikator Numbeo, OECD & ILO terbaru (USD)</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <button onclick="resetFilters()" class="text-xs text-slate-400 hover:text-cyan-400 px-3 py-1.5 rounded-lg border border-slate-800 hover:border-cyan-500/30 transition-all flex items-center gap-1.5">
+                    <i class="fa-solid fa-rotate-left"></i> Reset Filter
+                </button>
+            </div>
+        </div>
+
+        <!-- 1. KPI Summary Cards Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" id="kpiContainer">
+            <!-- Card 1: Gaji Bersih Rata-rata -->
+            <div class="glass-card glass-card-hover p-5 rounded-2xl relative overflow-hidden group">
+                <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity text-cyan-400">
+                    <i class="fa-solid fa-wallet text-5xl"></i>
+                </div>
+                <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Rata-Rata Gaji Bersih</p>
+                <h3 class="text-2xl font-bold text-white mt-2" id="kpiSalary">$0</h3>
+                <div class="mt-3 flex items-center gap-2 text-xs">
+                    <span id="kpiSalaryBadge" class="px-2 py-0.5 rounded-md text-emerald-400 bg-emerald-500/10 font-medium">Per Bulan</span>
+                    <span class="text-slate-400" id="kpiSalarySub text">Rata-rata lokasi aktif</span>
+                </div>
+            </div>
+
+            <!-- Card 2: Cost of Living vs Surplus -->
+            <div class="glass-card glass-card-hover p-5 rounded-2xl relative overflow-hidden group">
+                <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity text-emerald-400">
+                    <i class="fa-solid fa-scale-balanced text-5xl"></i>
+                </div>
+                <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Estimasi Biaya Hidup</p>
+                <h3 class="text-2xl font-bold text-white mt-2" id="kpiCostOfLiving">$0</h3>
+                <div class="mt-3 flex items-center gap-2 text-xs">
+                    <span id="kpiSurplus" class="px-2 py-0.5 rounded-md text-cyan-400 bg-cyan-500/10 font-semibold">+ $0 Tabungan/bln</span>
+                </div>
+            </div>
+
+            <!-- Card 3: Quality of Life & Work Hours -->
+            <div class="glass-card glass-card-hover p-5 rounded-2xl relative overflow-hidden group">
+                <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity text-indigo-400">
+                    <i class="fa-solid fa-heart-pulse text-5xl"></i>
+                </div>
+                <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Kualitas Hidup & Kerja</p>
+                <h3 class="text-2xl font-bold text-white mt-2" id="kpiQualityScore">0 / 100</h3>
+                <div class="mt-3 flex items-center gap-2 text-xs text-slate-400">
+                    <i class="fa-regular fa-clock text-indigo-400"></i>
+                    <span id="kpiWorkHours">0 Jam / Minggu</span>
+                </div>
+            </div>
+
+            <!-- Card 4: Top Demand Sector -->
+            <div class="glass-card glass-card-hover p-5 rounded-2xl relative overflow-hidden group">
+                <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity text-violet-400">
+                    <i class="fa-solid fa-briefcase text-5xl"></i>
+                </div>
+                <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Sektor Paling Dicari</p>
+                <h3 class="text-xl font-bold text-violet-400 mt-2 truncate" id="kpiTopDemand">Healthcare & Tech</h3>
+                <div class="mt-3 flex items-center gap-2 text-xs text-slate-400">
+                    <span class="px-2 py-0.5 rounded-md bg-violet-500/10 text-violet-300 font-medium" id="kpiDemandRatio">High Ratio Demand</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. Main Analytics Charts Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <!-- Grouped Bar Chart: Financial Overview -->
+            <div class="lg:col-span-2 glass-card p-6 rounded-2xl space-y-4">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-4">
+                    <div>
+                        <h2 class="text-base font-bold text-slate-100 flex items-center gap-2">
+                            <i class="fa-solid fa-chart-column text-cyan-400"></i>
+                            Pendapatan Bersih vs Biaya Hidup Rata-Rata (USD)
+                        </h2>
+                        <p class="text-xs text-slate-400">Perbandingan daya simpan bersih bulanan setelah biaya hidup utama</p>
+                    </div>
+                </div>
+                <div class="h-72 sm:h-80 relative">
+                    <canvas id="financialChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Radar Chart: Multi-Parameter Index -->
+            <div class="glass-card p-6 rounded-2xl space-y-4">
+                <div class="border-b border-slate-800 pb-4">
+                    <h2 class="text-base font-bold text-slate-100 flex items-center gap-2">
+                        <i class="fa-solid fa-compass text-indigo-400"></i>
+                        Indeks Kualitas & Daya Beli
+                    </h2>
+                    <p class="text-xs text-slate-400">Skor komparatif (0-100) per parameter</p>
+                </div>
+                <div class="h-72 sm:h-80 relative flex items-center justify-center">
+                    <canvas id="radarChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. Job Market & Property Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <!-- Stacked/Grouped Bar Chart: Supply vs Demand Job Market -->
+            <div class="lg:col-span-2 glass-card p-6 rounded-2xl space-y-4">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-4">
+                    <div>
+                        <h2 class="text-base font-bold text-slate-100 flex items-center gap-2">
+                            <i class="fa-solid fa-users-gear text-emerald-400"></i>
+                            Dinamika Pasar Kerja: Supply vs Demand
+                        </h2>
+                        <p class="text-xs text-slate-400">Keseimbangan ketersediaan tenaga kerja (Supply) vs Lowongan Pekerjaan (Demand)</p>
+                    </div>
+                    
+                    <!-- Industry Selector Filter -->
+                    <select id="industryFilter" class="bg-slate-900 text-xs text-slate-200 border border-slate-700 rounded-lg px-3 py-1.5 focus:outline-none focus:border-cyan-500">
+                        <option value="ALL">Semua Industri (Rata-rata)</option>
+                        <option value="Tech">IT & Software Tech</option>
+                        <option value="Finance">Finance & Banking</option>
+                        <option value="Healthcare">Healthcare & Medical</option>
+                        <option value="Engineering">Engineering & Industry</option>
+                        <option value="Hospitality">Hospitality & Tourism</option>
+                        <option value="Education">Education & Academia</option>
+                    </select>
+                </div>
+                <div class="h-72 sm:h-80 relative">
+                    <canvas id="jobMarketChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Housing Property Comparison Chart -->
+            <div class="glass-card p-6 rounded-2xl space-y-4">
+                <div class="border-b border-slate-800 pb-4">
+                    <h2 class="text-base font-bold text-slate-100 flex items-center gap-2">
+                        <i class="fa-solid fa-house-user text-amber-400"></i>
+                        Properti: Sewa vs Beli per m²
+                    </h2>
+                    <p class="text-xs text-slate-400">Rasio sewa apartemen 1 kamar vs Harga beli per m² (USD)</p>
+                </div>
+                <div class="h-72 sm:h-80 relative">
+                    <canvas id="propertyChart"></canvas>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- 4. Interactive Data Table with Sorting & Search -->
+        <div class="glass-card rounded-2xl p-6 space-y-4">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
+                <div>
+                    <h2 class="text-base font-bold text-slate-100 flex items-center gap-2">
+                        <i class="fa-solid fa-table-list text-cyan-400"></i>
+                        Matriks Data Rinci & Perbandingan Eksak
+                    </h2>
+                    <p class="text-xs text-slate-400">Klik header tabel untuk melakukan sorting data secara eksplisit</p>
+                </div>
+
+                <div class="flex items-center gap-3">
+                    <div class="relative">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-xs text-slate-500"></i>
+                        <input type="text" id="tableSearch" placeholder="Cari negara..." class="bg-slate-900 border border-slate-800 text-xs rounded-xl pl-8 pr-4 py-2 text-slate-200 focus:outline-none focus:border-cyan-500 w-48 sm:w-64 transition-all">
+                    </div>
+                    <button onclick="exportCSV()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs px-3 py-2 rounded-xl transition-all flex items-center gap-1.5 font-medium">
+                        <i class="fa-solid fa-download text-cyan-400"></i> Export CSV
+                    </button>
+                </div>
+            </div>
+
+            <!-- Table responsive wrapper -->
+            <div class="overflow-x-auto rounded-xl border border-slate-800">
+                <table class="w-full text-left text-xs text-slate-300">
+                    <thead class="bg-slate-900/90 text-slate-400 uppercase font-semibold text-[11px] tracking-wider border-b border-slate-800">
+                        <tr>
+                            <th scope="col" class="py-3.5 px-4 cursor-pointer hover:text-cyan-400 transition-colors" onclick="sortTable('country')">
+                                Negara <i class="fa-solid fa-sort ml-1 text-slate-600"></i>
+                            </th>
+                            <th scope="col" class="py-3.5 px-4 cursor-pointer hover:text-cyan-400 transition-colors" onclick="sortTable('salary')">
+                                Gaji Bersih/Bln <i class="fa-solid fa-sort ml-1 text-slate-600"></i>
+                            </th>
+                            <th scope="col" class="py-3.5 px-4 cursor-pointer hover:text-cyan-400 transition-colors" onclick="sortTable('col')">
+                                Biaya Hidup <i class="fa-solid fa-sort ml-1 text-slate-600"></i>
+                            </th>
+                            <th scope="col" class="py-3.5 px-4 cursor-pointer hover:text-cyan-400 transition-colors" onclick="sortTable('surplus')">
+                                Surplus Bersih <i class="fa-solid fa-sort ml-1 text-slate-600"></i>
+                            </th>
+                            <th scope="col" class="py-3.5 px-4 cursor-pointer hover:text-cyan-400 transition-colors" onclick="sortTable('ppIndex')">
+                                Daya Beli Index <i class="fa-solid fa-sort ml-1 text-slate-600"></i>
+                            </th>
+                            <th scope="col" class="py-3.5 px-4 cursor-pointer hover:text-cyan-400 transition-colors" onclick="sortTable('rent')">
+                                Sewa Apartemen <i class="fa-solid fa-sort ml-1 text-slate-600"></i>
+                            </th>
+                            <th scope="col" class="py-3.5 px-4 cursor-pointer hover:text-cyan-400 transition-colors" onclick="sortTable('buyM2')">
+                                Harga Beli /m² <i class="fa-solid fa-sort ml-1 text-slate-600"></i>
+                            </th>
+                            <th scope="col" class="py-3.5 px-4 cursor-pointer hover:text-cyan-400 transition-colors" onclick="sortTable('qol')">
+                                Quality Index <i class="fa-solid fa-sort ml-1 text-slate-600"></i>
+                            </th>
+                            <th scope="col" class="py-3.5 px-4 cursor-pointer hover:text-cyan-400 transition-colors" onclick="sortTable('workHours')">
+                                Jam Kerja/Mgg <i class="fa-solid fa-sort ml-1 text-slate-600"></i>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody id="dataTableBody" class="divide-y divide-slate-800 bg-slate-900/40">
+                        <!-- Data rows injected dynamically -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="glass-card border-t border-slate-800 py-6 mt-12 text-center text-xs text-slate-500">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <p>© 2026 Global Labor & Economic Intelligence Analytics. Interactive Single-File Dashboard.</p>
+            <div class="flex items-center gap-4 text-slate-400">
+                <span class="flex items-center gap-1.5"><i class="fa-solid fa-database text-cyan-500"></i> Data Benchmark Numbeo / OECD / ILO</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript Dataset & Dashboard Application Logic -->
+    <script>
+        // ----------------------------------------------------
+        // 1. DATASET REALISTIS (NUMBEO/OECD/ILO BENCHMARK)
+        // ----------------------------------------------------
+        const countryData = [
+            {
+                country: "Indonesia",
+                code: "ID",
+                flag: "🇮🇩",
+                col: 550,
+                salary: 380,
+                rent: 320,
+                buyM2: 1400,
+                qol: 58,
+                wlb: 62,
+                workHours: 42,
+                ppIndex: 32.5,
+                safetyIndex: 54.2,
+                jobMarket: {
+                    Tech: { supply: 85, demand: 92 },
+                    Finance: { supply: 70, demand: 65 },
+                    Healthcare: { supply: 55, demand: 80 },
+                    Engineering: { supply: 80, demand: 75 },
+                    Hospitality: { supply: 90, demand: 70 },
+                    Education: { supply: 75, demand: 60 }
+                }
+            },
+            {
+                country: "Singapore",
+                code: "SG",
+                flag: "🇸🇬",
+                col: 2800,
+                salary: 4500,
+                rent: 2600,
+                buyM2: 18500,
+                qol: 88,
+                wlb: 65,
+                workHours: 44,
+                ppIndex: 95.0,
+                safetyIndex: 76.5,
+                jobMarket: {
+                    Tech: { supply: 70, demand: 95 },
+                    Finance: { supply: 85, demand: 98 },
+                    Healthcare: { supply: 50, demand: 85 },
+                    Engineering: { supply: 65, demand: 80 },
+                    Hospitality: { supply: 60, demand: 75 },
+                    Education: { supply: 60, demand: 55 }
+                }
+            },
+            {
+                country: "Portugal",
+                code: "PT",
+                flag: "🇵🇹",
+                col: 1250,
+                salary: 1400,
+                rent: 1050,
+                buyM2: 3800,
+                qol: 82,
+                wlb: 84,
+                workHours: 39,
+                ppIndex: 55.4,
+                safetyIndex: 69.8,
+                jobMarket: {
+                    Tech: { supply: 60, demand: 88 },
+                    Finance: { supply: 55, demand: 60 },
+                    Healthcare: { supply: 45, demand: 78 },
+                    Engineering: { supply: 60, demand: 70 },
+                    Hospitality: { supply: 80, demand: 85 },
+                    Education: { supply: 70, demand: 50 }
+                }
+            },
+            {
+                country: "Germany",
+                code: "DE",
+                flag: "🇩🇪",
+                col: 1950,
+                salary: 3200,
+                rent: 1250,
+                buyM2: 6200,
+                qol: 89,
+                wlb: 91,
+                workHours: 34.5,
+                ppIndex: 92.8,
+                safetyIndex: 64.5,
+                jobMarket: {
+                    Tech: { supply: 65, demand: 96 },
+                    Finance: { supply: 70, demand: 75 },
+                    Healthcare: { supply: 40, demand: 95 },
+                    Engineering: { supply: 75, demand: 94 },
+                    Hospitality: { supply: 50, demand: 70 },
+                    Education: { supply: 60, demand: 72 }
+                }
+            },
+            {
+                country: "Japan",
+                code: "JP",
+                flag: "🇯🇵",
+                col: 1450,
+                salary: 2400,
+                rent: 850,
+                buyM2: 6900,
+                qol: 85,
+                wlb: 60,
+                workHours: 41,
+                ppIndex: 78.2,
+                safetyIndex: 77.8,
+                jobMarket: {
+                    Tech: { supply: 50, demand: 92 },
+                    Finance: { supply: 65, demand: 60 },
+                    Healthcare: { supply: 35, demand: 98 },
+                    Engineering: { supply: 60, demand: 88 },
+                    Hospitality: { supply: 55, demand: 80 },
+                    Education: { supply: 60, demand: 65 }
+                }
+            },
+            {
+                country: "Australia",
+                code: "AU",
+                flag: "🇦🇺",
+                col: 2400,
+                salary: 4200,
+                rent: 1950,
+                buyM2: 8500,
+                qol: 91,
+                wlb: 88,
+                workHours: 36,
+                ppIndex: 98.4,
+                safetyIndex: 56.8,
+                jobMarket: {
+                    Tech: { supply: 65, demand: 90 },
+                    Finance: { supply: 75, demand: 70 },
+                    Healthcare: { supply: 45, demand: 96 },
+                    Engineering: { supply: 60, demand: 91 },
+                    Hospitality: { supply: 70, demand: 82 },
+                    Education: { supply: 65, demand: 75 }
+                }
+            }
+        ];
+
+        // Global State Variables
+        let selectedCountry = "ALL";
+        let selectedIndustry = "ALL";
+        let sortColumn = "salary";
+        let sortAscending = false;
+        let chartInstances = {};
+
+        // Chart Global Defaults for Dark Mode
+        Chart.defaults.color = '#94a3b8';
+        Chart.defaults.font.family = 'Inter, sans-serif';
+        Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.05)';
+
+        // ----------------------------------------------------
+        // 2. INITIALIZATION & EVEN LISTENERS
+        // ----------------------------------------------------
+        window.addEventListener('DOMContentLoaded', () => {
+            initFilterListeners();
+            updateDashboard();
+        });
+
+        function initFilterListeners() {
+            // Country Filter Click Events
+            const buttons = document.querySelectorAll('.country-btn');
+            buttons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    buttons.forEach(b => {
+                        b.classList.remove('bg-gradient-to-r', 'from-cyan-500', 'to-blue-600', 'text-white', 'shadow-md', 'shadow-cyan-500/20');
+                        b.classList.add('text-slate-400', 'hover:text-white', 'hover:bg-slate-800');
+                    });
+                    
+                    btn.classList.remove('text-slate-400', 'hover:text-white', 'hover:bg-slate-800');
+                    btn.classList.add('bg-gradient-to-r', 'from-cyan-500', 'to-blue-600', 'text-white', 'shadow-md', 'shadow-cyan-500/20');
+
+                    selectedCountry = btn.getAttribute('data-country');
+                    updateDashboard();
+                });
+            });
+
+            // Industry Filter Change Event
+            document.getElementById('industryFilter').addEventListener('change', (e) => {
+                selectedIndustry = e.target.value;
+                renderJobMarketChart();
+            });
+
+            // Table Search Input Event
+            document.getElementById('tableSearch').addEventListener('input', () => {
+                renderTable();
+            });
+        }
+
+        function resetFilters() {
+            document.querySelector('[data-country="ALL"]').click();
+            document.getElementById('industryFilter').value = 'ALL';
+            selectedIndustry = 'ALL';
+            document.getElementById('tableSearch').value = '';
+        }
+
+        // ----------------------------------------------------
+        // 3. CORE DASHBOARD RENDER LOGIC
+        // ----------------------------------------------------
+        function getFilteredCountries() {
+            if (selectedCountry === "ALL") {
+                return countryData;
+            }
+            return countryData.filter(item => item.country === selectedCountry);
+        }
+
+        function updateDashboard() {
+            const data = getFilteredCountries();
+            updateTitleBanner();
+            renderKPIs(data);
+            renderFinancialChart(data);
+            renderRadarChart(data);
+            renderJobMarketChart();
+            renderPropertyChart(data);
+            renderTable();
+        }
+
+        function updateTitleBanner() {
+            const titleEl = document.getElementById('filterStatusTitle');
+            if (selectedCountry === "ALL") {
+                titleEl.textContent = "Menampilkan Perbandingan 6 Negara (Perspektif Global)";
+            } else {
+                const c = countryData.find(x => x.country === selectedCountry);
+                titleEl.textContent = `Menampilkan Detail & Profil Analisis: ${c.flag} ${c.country}`;
+            }
+        }
+
+        // ----------------------------------------------------
+        // 4. KPI CARDS UPDATE
+        // ----------------------------------------------------
+        function renderKPIs(data) {
+            const avgSalary = Math.round(data.reduce((acc, curr) => acc + curr.salary, 0) / data.length);
+            const avgCol = Math.round(data.reduce((acc, curr) => acc + curr.col, 0) / data.length);
+            const avgSurplus = avgSalary - avgCol;
+            const avgQol = Math.round(data.reduce((acc, curr) => acc + curr.qol, 0) / data.length);
+            const avgWorkHours = (data.reduce((acc, curr) => acc + curr.workHours, 0) / data.length).toFixed(1);
+
+            // Compute Top Demand Sector
+            let sectorDemandSums = { Tech: 0, Finance: 0, Healthcare: 0, Engineering: 0, Hospitality: 0, Education: 0 };
+            data.forEach(c => {
+                for (let sec in c.jobMarket) {
+                    sectorDemandSums[sec] += c.jobMarket[sec].demand;
+                }
+            });
+            let topSector = Object.keys(sectorDemandSums).reduce((a, b) => sectorDemandSums[a] > sectorDemandSums[b] ? a : b);
+
+            // Format UI
+            document.getElementById('kpiSalary').textContent = `$${avgSalary.toLocaleString()}`;
+            document.getElementById('kpiCostOfLiving').textContent = `$${avgCol.toLocaleString()}`;
+            
+            const surplusEl = document.getElementById('kpiSurplus');
+            if (avgSurplus >= 0) {
+                surplusEl.className = "px-2 py-0.5 rounded-md text-emerald-400 bg-emerald-500/10 font-semibold";
+                surplusEl.textContent = `+ $${avgSurplus.toLocaleString()} Surplus/Bln`;
+            } else {
+                surplusEl.className = "px-2 py-0.5 rounded-md text-rose-400 bg-rose-500/10 font-semibold";
+                surplusEl.textContent = `- $${Math.abs(avgSurplus).toLocaleString()} Defisit/Bln`;
+            }
+
+            document.getElementById('kpiQualityScore').textContent = `${avgQol} / 100`;
+            document.getElementById('kpiWorkHours').textContent = `${avgWorkHours} Jam / Mgg`;
+            document.getElementById('kpiTopDemand').textContent = topSector;
+            document.getElementById('kpiDemandRatio').textContent = `Demand Tinggi (${Math.round(sectorDemandSums[topSector]/data.length)}/100)`;
+        }
+
+        // ----------------------------------------------------
+        // 5. CHART 1: FINANCIAL COMPARISON (BAR CHART)
+        // ----------------------------------------------------
+        function renderFinancialChart(data) {
+            const ctx = document.getElementById('financialChart').getContext('2d');
+            if (chartInstances.financial) chartInstances.financial.destroy();
+
+            chartInstances.financial = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: data.map(d => `${d.flag} ${d.country}`),
+                    datasets: [
+                        {
+                            label: 'Gaji Bersih (Net Salary)',
+                            data: data.map(d => d.salary),
+                            backgroundColor: 'rgba(6, 182, 212, 0.85)',
+                            borderColor: '#06b6d4',
+                            borderWidth: 1,
+                            borderRadius: 6
+                        },
+                        {
+                            label: 'Biaya Hidup (Cost of Living)',
+                            data: data.map(d => d.col),
+                            backgroundColor: 'rgba(244, 63, 94, 0.75)',
+                            borderColor: '#f43f5e',
+                            borderWidth: 1,
+                            borderRadius: 6
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top', labels: { boxWidth: 12, usePointStyle: true } },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: $${context.raw.toLocaleString()}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { callback: value => '$' + value },
+                            grid: { color: 'rgba(255, 255, 255, 0.05)' }
+                        },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        // ----------------------------------------------------
+        // 6. CHART 2: RADAR CHART (MULTI-PARAMETER EVALUATION)
+        // ----------------------------------------------------
+        function renderRadarChart(data) {
+            const ctx = document.getElementById('radarChart').getContext('2d');
+            if (chartInstances.radar) chartInstances.radar.destroy();
+
+            const labels = ['Quality of Life', 'Purchasing Power', 'Safety Index', 'Work-Life Balance', 'Savings Capacity'];
+            
+            // Generate datasets based on selection
+            let datasets = [];
+            const colors = [
+                { bg: 'rgba(6, 182, 212, 0.25)', border: '#06b6d4' },
+                { bg: 'rgba(99, 102, 241, 0.25)', border: '#6366f1' },
+                { bg: 'rgba(16, 185, 129, 0.25)', border: '#10b981' },
+                { bg: 'rgba(245, 158, 11, 0.25)', border: '#f59e0b' },
+                { bg: 'rgba(139, 92, 246, 0.25)', border: '#8b5cf6' },
+                { bg: 'rgba(244, 63, 94, 0.25)', border: '#f43f5e' }
+            ];
+
+            data.forEach((c, index) => {
+                // Calculate normalized Savings Capacity Index (0 - 100)
+                const savingsRatio = Math.max(0, Math.min(100, Math.round(((c.salary - c.col) / c.salary) * 100)));
+
+                datasets.push({
+                    label: `${c.flag} ${c.country}`,
+                    data: [c.qol, c.ppIndex, c.safetyIndex, c.wlb, savingsRatio],
+                    backgroundColor: colors[index % colors.length].bg,
+                    borderColor: colors[index % colors.length].border,
+                    borderWidth: 2,
+                    pointBackgroundColor: colors[index % colors.length].border,
+                    pointRadius: 3
+                });
+            });
+
+            chartInstances.radar = new Chart(ctx, {
+                type: 'radar',
+                data: { labels: labels, datasets: datasets },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { 
+                            position: 'bottom', 
+                            labels: { boxWidth: 10, font: { size: 10 }, usePointStyle: true } 
+                        }
+                    },
+                    scales: {
+                        r: {
+                            angleLines: { color: 'rgba(255, 255, 255, 0.1)' },
+                            grid: { color: 'rgba(255, 255, 255, 0.08)' },
+                            pointLabels: { font: { size: 10, weight: '600' } },
+                            ticks: { display: false, backdropColor: 'transparent' },
+                            suggestedMin: 0,
+                            suggestedMax: 100
+                        }
+                    }
+                }
+            });
+        }
+
+        // ----------------------------------------------------
+        // 7. CHART 3: JOB MARKET SUPPLY VS DEMAND
+        // ----------------------------------------------------
+        function renderJobMarketChart() {
+            const ctx = document.getElementById('jobMarketChart').getContext('2d');
+            if (chartInstances.jobMarket) chartInstances.jobMarket.destroy();
+
+            const data = getFilteredCountries();
+            let labels = [];
+            let supplyData = [];
+            let demandData = [];
+
+            if (selectedIndustry === "ALL") {
+                // Aggregate across all industries
+                labels = data.map(d => `${d.flag} ${d.country}`);
+                supplyData = data.map(d => {
+                    const keys = Object.keys(d.jobMarket);
+                    return Math.round(keys.reduce((acc, k) => acc + d.jobMarket[k].supply, 0) / keys.length);
+                });
+                demandData = data.map(d => {
+                    const keys = Object.keys(d.jobMarket);
+                    return Math.round(keys.reduce((acc, k) => acc + d.jobMarket[k].demand, 0) / keys.length);
+                });
+            } else {
+                // Show selected industry specifically
+                labels = data.map(d => `${d.flag} ${d.country}`);
+                supplyData = data.map(d => d.jobMarket[selectedIndustry].supply);
+                demandData = data.map(d => d.jobMarket[selectedIndustry].demand);
+            }
+
+            chartInstances.jobMarket = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Labor Supply (Ketersediaan Tenaga)',
+                            data: supplyData,
+                            backgroundColor: 'rgba(99, 102, 241, 0.85)',
+                            borderColor: '#6366f1',
+                            borderRadius: 6
+                        },
+                        {
+                            label: 'Labor Demand (Lowongan/Kebutuhan)',
+                            data: demandData,
+                            backgroundColor: 'rgba(16, 185, 129, 0.85)',
+                            borderColor: '#10b981',
+                            borderRadius: 6
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top', labels: { boxWidth: 12, usePointStyle: true } },
+                        tooltip: {
+                            callbacks: {
+                                label: (ctx) => `${ctx.dataset.label}: ${ctx.raw} Index Score`
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            grid: { color: 'rgba(255, 255, 255, 0.05)' }
+                        },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        // ----------------------------------------------------
+        // 8. CHART 4: HOUSING PROPERTY RENT VS BUY
+        // ----------------------------------------------------
+        function renderPropertyChart(data) {
+            const ctx = document.getElementById('propertyChart').getContext('2d');
+            if (chartInstances.property) chartInstances.property.destroy();
+
+            chartInstances.property = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: data.map(d => `${d.flag} ${d.country}`),
+                    datasets: [
+                        {
+                            type: 'bar',
+                            label: 'Sewa Apartemen 1 Kamar ($/bln)',
+                            data: data.map(d => d.rent),
+                            backgroundColor: 'rgba(245, 158, 11, 0.85)',
+                            borderColor: '#f59e0b',
+                            yAxisID: 'y'
+                        },
+                        {
+                            type: 'line',
+                            label: 'Harga Beli / m² ($)',
+                            data: data.map(d => d.buyM2),
+                            borderColor: '#8b5cf6',
+                            backgroundColor: '#8b5cf6',
+                            borderWidth: 3,
+                            pointRadius: 4,
+                            yAxisID: 'y1'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top', labels: { boxWidth: 12, usePointStyle: true } }
+                    },
+                    scales: {
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            ticks: { callback: v => '$' + v },
+                            grid: { color: 'rgba(255, 255, 255, 0.05)' }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            ticks: { callback: v => '$' + v },
+                            grid: { drawOnChartArea: false }
+                        },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        // ----------------------------------------------------
+        // 9. DATA TABLE WITH SORTING & SEARCHING
+        // ----------------------------------------------------
+        function sortTable(column) {
+            if (sortColumn === column) {
+                sortAscending = !sortAscending;
+            } else {
+                sortColumn = column;
+                sortAscending = true;
+            }
+            renderTable();
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('dataTableBody');
+            const searchVal = document.getElementById('tableSearch').value.toLowerCase();
+            let data = getFilteredCountries();
+
+            // Filter search
+            data = data.filter(item => item.country.toLowerCase().includes(searchVal) || item.code.toLowerCase().includes(searchVal));
+
+            // Calculate calculated surplus property
+            data.forEach(item => {
+                item.surplus = item.salary - item.col;
+            });
+
+            // Sort
+            data.sort((a, b) => {
+                let valA = a[sortColumn];
+                let valB = b[sortColumn];
+
+                if (typeof valA === 'string') {
+                    return sortAscending ? valA.localeCompare(valB) : valB.localeCompare(valA);
+                }
+                return sortAscending ? valA - valB : valB - valA;
+            });
+
+            tbody.innerHTML = '';
+            if (data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="9" class="text-center py-6 text-slate-500">Tidak ada negara yang cocok dengan pencarian.</td></tr>`;
+                return;
+            }
+
+            data.forEach(d => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-800/50 transition-colors";
+
+                const surplusClass = d.surplus >= 0 ? "text-emerald-400 font-semibold" : "text-rose-400 font-semibold";
+
+                tr.innerHTML = `
+                    <td class="py-3 px-4 font-semibold text-slate-100 flex items-center gap-2">
+                        <span>${d.flag}</span>
+                        <span>${d.country}</span>
+                    </td>
+                    <td class="py-3 px-4">$${d.salary.toLocaleString()}</td>
+                    <td class="py-3 px-4 text-slate-300">$${d.col.toLocaleString()}</td>
+                    <td class="py-3 px-4 ${surplusClass}">$${d.surplus > 0 ? '+' : ''}${d.surplus.toLocaleString()}</td>
+                    <td class="py-3 px-4">
+                        <span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-cyan-500/10 text-cyan-400">${d.ppIndex}</span>
+                    </td>
+                    <td class="py-3 px-4">$${d.rent.toLocaleString()}</td>
+                    <td class="py-3 px-4">$${d.buyM2.toLocaleString()}</td>
+                    <td class="py-3 px-4">
+                        <div class="flex items-center gap-2">
+                            <span class="font-medium">${d.qol}</span>
+                            <div class="w-12 bg-slate-800 h-1.5 rounded-full overflow-hidden">
+                                <div class="bg-indigo-500 h-full" style="width: ${d.qol}%"></div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="py-3 px-4">${d.workHours} jam</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // ----------------------------------------------------
+        // 10. EXPORT DATA TO CSV
+        // ----------------------------------------------------
+        function exportCSV() {
+            const data = getFilteredCountries();
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += "Country,Salary_USD,CostOfLiving_USD,Surplus_USD,PurchasingPowerIndex,Rent_USD,BuyM2_USD,QualityOfLife,WorkHoursWeek\n";
+
+            data.forEach(d => {
+                const surplus = d.salary - d.col;
+                csvContent += `"${d.country}",${d.salary},${d.col},${surplus},${d.ppIndex},${d.rent},${d.buyM2},${d.qol},${d.workHours}\n`;
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `Global_Economic_Comparison_${selectedCountry}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
+</body>
+</html>
